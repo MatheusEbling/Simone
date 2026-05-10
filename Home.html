@@ -432,14 +432,18 @@
           mouse.y = -9999;
         });
 
-        // Giroscópio/acelerômetro no mobile
+        // Giroscópio/acelerômetro no mobile — suavizado
         if (window.DeviceMotionEvent) {
+          var smoothX = 0, smoothY = 0;
           window.addEventListener('devicemotion', function (e) {
             const acc = e.accelerationIncludingGravity;
             if (!acc) return;
+            // filtro passa-baixo para suavizar leituras bruscas
+            smoothX = smoothX * 0.85 + (acc.x || 0) * 0.15;
+            smoothY = smoothY * 0.85 + (acc.y || 0) * 0.15;
             for (const b of balls) {
-              b.vx += (acc.x || 0) * 0.15;
-              b.vy -= (acc.y || 0) * 0.15;
+              b.vx += smoothX * 0.08;
+              b.vy -= smoothY * 0.08;
             }
           });
         }
