@@ -195,16 +195,37 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      // ── Zoom modal (reutilizável) ────────────────────────────
-      // Uso: imgZoom.open(imgElement) | imgZoom.attach('[seletor] img')
+      // ── Zoom modal com carrossel ─────────────────────────────
       const imgZoom = (() => {
         const modal = document.getElementById('imgZoomModal');
-        const modalImg = document.getElementById('imgZoomImg');
+        const wrapper = document.getElementById('imgZoomWrapper');
         const closeBtn = document.getElementById('imgZoomClose');
+        let swiperInstance = null;
 
-        const open = (imgEl) => {
-          modalImg.src = imgEl.src;
-          modalImg.alt = imgEl.alt;
+        const open = (imgs, index) => {
+          wrapper.innerHTML = '';
+          imgs.forEach((img) => {
+            const slide = document.createElement('div');
+            slide.className = 'swiper-slide';
+            const el = document.createElement('img');
+            el.src = img.src;
+            el.alt = img.alt;
+            slide.appendChild(el);
+            wrapper.appendChild(slide);
+          });
+
+          if (swiperInstance) swiperInstance.destroy(true, true);
+          swiperInstance = new Swiper('#imgZoomSwiper', {
+            initialSlide: index,
+            slidesPerView: 1,
+            spaceBetween: 16,
+            navigation: {
+              nextEl: '.img-zoom-modal__next',
+              prevEl: '.img-zoom-modal__prev',
+            },
+            keyboard: { enabled: true },
+          });
+
           modal.classList.add('is-open');
           document.body.style.overflow = 'hidden';
         };
@@ -212,10 +233,9 @@
         const close = () => {
           modal.classList.remove('is-open');
           document.body.style.overflow = '';
-          modalImg.src = '';
         };
 
-        const attach = (containerSelector, imgSelector) => {
+        const attachGaleria = (containerSelector, imgSelector) => {
           const container = document.querySelector(containerSelector);
           if (!container) return;
           container.querySelectorAll(imgSelector).forEach((img) => {
@@ -223,7 +243,10 @@
           });
           container.addEventListener('click', (e) => {
             const img = e.target.closest(imgSelector);
-            if (img) open(img);
+            if (!img) return;
+            const allImgs = Array.from(container.querySelectorAll(imgSelector));
+            const index = allImgs.indexOf(img);
+            open(allImgs, index);
           });
         };
 
@@ -231,7 +254,7 @@
         modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 
-        return { open, close, attach };
+        return { open, close, attachGaleria };
       })();
 
       // ── Hero background Swiper ──────────────────────────────
@@ -264,31 +287,39 @@
         },
       });
 
-      imgZoom.attach('.galeria__swiper', '.swiper-slide img');
+      imgZoom.attachGaleria('.galeria__swiper', '.swiper-slide img');
 
       // ── Confetti ────────────────────────────────────────────
-      function launchConfetti() {
+      var colors = ['#f04770', '#ffd167', '#3d90aa', '#ffffff', '#ffb3c6'];
+
+      function launchConfettiMobile() {
+        confetti({
+          particleCount: 200,
+          angle: 90,
+          spread: 60,
+          gravity: 0.7,
+          startVelocity: 80,
+          origin: { x: 0.5, y: 1 },
+          colors: colors,
+        });
+      }
+
+      function launchConfettiDesktop() {
         var duration = 600;
         var end = Date.now() + duration;
-        var colors = ['#f04770', '#ffd167', '#3d90aa', '#ffffff', '#ffb3c6'];
-
         (function frame() {
-          confetti({
-            particleCount: 3,
-            angle: 30,
-            spread: 70,
-            origin: { x: 0 },
-            colors: colors,
-          });
-          confetti({
-            particleCount: 3,
-            angle: 150,
-            spread: 70,
-            origin: { x: 1 },
-            colors: colors,
-          });
+          confetti({ startVelocity: 60, particleCount: 3, angle: 20, spread: 70, gravity: 0.7, origin: { x: 0 }, colors: colors });
+          confetti({ startVelocity: 60, particleCount: 3, angle: 160, spread: 70, gravity: 0.7, origin: { x: 1 }, colors: colors });
           if (Date.now() < end) requestAnimationFrame(frame);
         })();
+      }
+
+      function launchConfetti() {
+        if (window.innerWidth <= 767) {
+          launchConfettiMobile();
+        } else {
+          launchConfettiDesktop();
+        }
       }
 
       launchConfetti();
@@ -446,10 +477,14 @@
     <img src="Img/svg/whatsapp-flutuante.svg" alt="WhatsApp">
   </a>
 
-  <!-- Modal de zoom reutilizável -->
+  <!-- Modal de zoom com carrossel -->
   <div class="img-zoom-modal" id="imgZoomModal" role="dialog" aria-modal="true" aria-label="Imagem ampliada">
     <button class="img-zoom-modal__close" id="imgZoomClose" aria-label="Fechar">&times;</button>
-    <img class="img-zoom-modal__img" id="imgZoomImg" src="" alt="">
+    <div class="img-zoom-modal__swiper swiper" id="imgZoomSwiper">
+      <div class="swiper-wrapper" id="imgZoomWrapper"></div>
+      <div class="swiper-button-prev img-zoom-modal__prev"></div>
+      <div class="swiper-button-next img-zoom-modal__next"></div>
+    </div>
   </div>
 
   <footer class="u-footer" id="footer">
