@@ -395,15 +395,22 @@
         let W, H, mouse = { x: -9999, y: -9999 };
         let balls = [];
 
+        var dpr = window.devicePixelRatio || 1;
+
         function resize() {
-          const rect = section.getBoundingClientRect();
-          W = canvas.width = section.offsetWidth;
-          H = canvas.height = section.offsetHeight;
+          dpr = window.devicePixelRatio || 1;
+          W = section.offsetWidth;
+          H = section.offsetHeight;
+          canvas.width = W * dpr;
+          canvas.height = H * dpr;
+          canvas.style.width = W + 'px';
+          canvas.style.height = H + 'px';
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         }
 
         function initBalls() {
           balls = Array.from({ length: NUM }, () => {
-            const r = 16 + Math.random() * 24;
+            const r = 28 + Math.random() * 36;
             return {
               x: r + Math.random() * (W - r * 2),
               y: r + Math.random() * (H - r * 2),
