@@ -76,11 +76,11 @@
         <div>
           <h5 class="hero__eyebrow">Decoração de festas e eventos · 20 anos de experiência</h5>
           <h1 class="hero__titulo">Transformamos espaços em memórias que duram para sempre</h1>
-          <p class="hero__descricao">Decoração de festas e eventos com criatividade e atenção a cada detalhe — do balão
+          <p class="hero__descricao">Decoração de festas e eventos com criatividade e atenção a cada detalhe do balão
             à
             mesa do bolo. Festas infantis, 15 anos, aniversários e formaturas.</p>
           <p class="hero__cta-wrapper">
-            <a href="https://wa.me/555196236804 " class="hero__cta">Solicite
+            <a href="https://wa.me/555196236804?text=Ol%C3%A1,+Vim+pelo+Site" class="hero__cta">Solicite
               seu orçamento</a>
 
         </div>
@@ -167,22 +167,30 @@
     <img class="galeria__decoracao-topo" src="https://placehold.co/91x111" alt="" data-image-width="91"
       data-image-height="111">
     <h5 class="galeria__eyebrow">Momentos que criamos juntos</h5>
-    <h2 class="galeria__titulo">Portfólio de Decorações — Festas Realizadas</h2>
+    <h2 class="galeria__titulo">Portfólio de Decorações<br>Festas Realizadas</h2>
     <img class="galeria__decoracao-base" src="https://placehold.co/184x196" alt="" data-image-width="184"
       data-image-height="196">
     <p class="galeria__descricao">Mais de 1.400 eventos realizados em 20 anos. Cada festa
       com a mesma
-      dedicação — sorrisos, emoções e memórias que ficam para sempre.</p>
+      dedicação, sorrisos, emoções e memórias que ficam para sempre.</p>
 
     <div class="galeria__swiper swiper">
       <div class="swiper-wrapper">
-        <div class="swiper-slide"><img src="Img\vitrinePosts\post1.jpg" alt="Decoração 1"></div>
-        <div class="swiper-slide"><img src="Img\vitrinePosts\post2.jpg" alt="Decoração 2"></div>
+        <div class="swiper-slide"><img src="Img\vitrinePosts\post7.jpg" alt="Decoração 7"></div>
+        <div class="swiper-slide swiper-slide--video" data-video="videos/video1.mp4">
+          <video src="videos/video1.mp4" muted preload="metadata" class="galeria__video-thumb"></video>
+          <button class="galeria__play-btn" aria-label="Reproduzir vídeo">&#9654;</button>
+        </div>
+        <div class="swiper-slide"><img src="Img\vitrinePosts\post6.jpg" alt="Decoração 6"></div>
+        <div class="swiper-slide swiper-slide--video" data-video="videos/video2.mp4">
+          <video src="videos/video2.mp4" muted preload="metadata" class="galeria__video-thumb"></video>
+          <button class="galeria__play-btn" aria-label="Reproduzir vídeo">&#9654;</button>
+        </div>
         <div class="swiper-slide"><img src="Img\vitrinePosts\post3.jpg" alt="Decoração 3"></div>
         <div class="swiper-slide"><img src="Img\vitrinePosts\post4.jpg" alt="Decoração 4"></div>
         <div class="swiper-slide"><img src="Img\vitrinePosts\post5.jpg" alt="Decoração 5"></div>
-        <div class="swiper-slide"><img src="Img\vitrinePosts\post6.jpg" alt="Decoração 6"></div>
-        <div class="swiper-slide"><img src="Img\vitrinePosts\post7.jpg" alt="Decoração 7"></div>
+        <div class="swiper-slide"><img src="Img\vitrinePosts\post2.jpg" alt="Decoração 2"></div>
+        <div class="swiper-slide"><img src="Img\vitrinePosts\post1.jpg" alt="Decoração 1"></div>
       </div>
       <div class="swiper-button-prev"></div>
       <div class="swiper-button-next"></div>
@@ -199,10 +207,28 @@
       const imgZoom = (() => {
         const modal = document.getElementById('imgZoomModal');
         const wrapper = document.getElementById('imgZoomWrapper');
+        const swiperEl = document.getElementById('imgZoomSwiper');
+        const videoWrap = document.getElementById('imgZoomVideoWrap');
+        const videoEl = document.getElementById('imgZoomVideo');
         const closeBtn = document.getElementById('imgZoomClose');
         let swiperInstance = null;
 
+        const showSwiper = () => {
+          swiperEl.style.display = '';
+          videoWrap.style.display = 'none';
+          videoEl.pause();
+          videoEl.src = '';
+        };
+
+        const showVideo = (src) => {
+          swiperEl.style.display = 'none';
+          videoWrap.style.display = 'flex';
+          videoEl.src = src;
+          videoEl.play();
+        };
+
         const open = (imgs, index) => {
+          showSwiper();
           wrapper.innerHTML = '';
           imgs.forEach((img) => {
             const slide = document.createElement('div');
@@ -230,9 +256,17 @@
           document.body.style.overflow = 'hidden';
         };
 
+        const openVideo = (src) => {
+          showVideo(src);
+          modal.classList.add('is-open');
+          document.body.style.overflow = 'hidden';
+        };
+
         const close = () => {
           modal.classList.remove('is-open');
           document.body.style.overflow = '';
+          videoEl.pause();
+          videoEl.src = '';
         };
 
         const attachGaleria = (containerSelector, imgSelector) => {
@@ -242,6 +276,13 @@
             img.style.cursor = 'zoom-in';
           });
           container.addEventListener('click', (e) => {
+            // clique em slide de vídeo
+            const videoSlide = e.target.closest('.swiper-slide--video');
+            if (videoSlide) {
+              openVideo(videoSlide.dataset.video);
+              return;
+            }
+            // clique em imagem normal
             const img = e.target.closest(imgSelector);
             if (!img) return;
             const allImgs = Array.from(container.querySelectorAll(imgSelector));
@@ -254,7 +295,7 @@
         modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 
-        return { open, close, attachGaleria };
+        return { open, openVideo, close, attachGaleria };
       })();
 
       // ── Hero background Swiper ──────────────────────────────
@@ -391,7 +432,7 @@
               <h3 class="processo-etapa__titulo">03 · Produção &amp; Montagem</h3>
               <p class="processo-etapa__descricao">Nossa equipe produz todos os elementos
                 e faz a montagem completa
-                no local. Você chega e encontra tudo pronto — o trabalho pesado é todo nosso.</p>
+                no local. Você chega e encontra tudo pronto o trabalho pesado é todo nosso.</p>
             </div>
           </div>
         </div>
@@ -453,7 +494,7 @@
       </div>
       <div class="contato__col contato__col--info">
         <h4 class="contato__info">
-          <a href="https://wa.me/555196236804">
+          <a href="https://wa.me/555196236804?text=Ol%C3%A1,+Vim+pelo+Site">
             <svg class="icon">
               <use href="#icon-whatsapp" />
             </svg>
@@ -473,7 +514,8 @@
 
 
   <!-- Botão WhatsApp flutuante -->
-  <a href="https://wa.me/555196236804" target="_blank" class="whatsapp-fab" aria-label="Falar pelo WhatsApp">
+  <a href="https://wa.me/555196236804?text=Ol%C3%A1,+Vim+pelo+Site" target="_blank" class="whatsapp-fab"
+    aria-label="Falar pelo WhatsApp">
     <img src="Img/svg/whatsapp-flutuante.svg" alt="WhatsApp">
   </a>
 
@@ -484,6 +526,10 @@
       <div class="swiper-wrapper" id="imgZoomWrapper"></div>
       <div class="swiper-button-prev img-zoom-modal__prev"></div>
       <div class="swiper-button-next img-zoom-modal__next"></div>
+    </div>
+    <!-- Vídeo modal -->
+    <div class="img-zoom-modal__video-wrap" id="imgZoomVideoWrap" style="display:none">
+      <video class="img-zoom-modal__video" id="imgZoomVideo" autoplay muted controls playsinline></video>
     </div>
   </div>
 
