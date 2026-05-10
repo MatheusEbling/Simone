@@ -252,6 +252,13 @@ img {
 
     .hero__logo {
       width: 150px;
+      transform: translateY(-60px);
+      opacity: 0;
+
+      &.is-visible {
+        transform: translateY(0);
+        opacity: 1;
+      }
     }
 
     .hero__decoracao-img {
@@ -357,7 +364,26 @@ img {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 5px;
+    gap: 2px;
+
+    strong {
+      display: inline;
+    }
+
+    .word {
+      display: inline-flex;
+    }
+
+    .word-space {
+      display: inline-block;
+      width: 0;
+    }
+
+    .char {
+      display: inline-block;
+      transition: transform 0.2s ease;
+      will-change: transform;
+    }
 
 
     strong.years {
@@ -474,8 +500,16 @@ img {
     filter: drop-shadow(0 4px 12px rgba(0, 0, 0, .15));
     transition: transform 0.25s ease;
 
-    &:hover {
-      transform: scale(1.05);
+    @media (hover: hover) {
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+
+    @include respond($bp-md) {
+      &.is-center {
+        transform: scale(1.05);
+      }
     }
   }
 
@@ -607,7 +641,13 @@ img {
       align-items: flex-end; // alinha pela base — todas as fotos ficam com a borda inferior nivelada
       transition: transform 0.25s ease;
 
-      &:hover {
+      @media (hover: hover) {
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+
+      &.swiper-slide-active {
         transform: scale(1.05);
       }
 
@@ -782,8 +822,16 @@ img {
     filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
     transition: transform 0.25s ease;
 
-    &:hover {
-      transform: scale(1.05);
+    @media (hover: hover) {
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+
+    @include respond($bp-md) {
+      &.is-center {
+        transform: scale(1.05);
+      }
     }
   }
 
@@ -809,6 +857,25 @@ img {
     margin: 0;
   }
 
+  .processo-etapa__cta {
+    display: inline-block;
+    margin-top: 20px;
+    background-color: $color-primary;
+    color: $color-white;
+    font-weight: 700;
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.9rem;
+    padding: 10px 24px;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+      background-color: $color-primary-hover;
+      transform: translateY(-2px);
+    }
+  }
+
   @include respond($bp-lg) {
     .processo__grid {
       grid-template-columns: repeat(2, 1fr);
@@ -822,6 +889,10 @@ img {
 
     .processo__grid {
       grid-template-columns: 1fr;
+    }
+
+    .processo__canvas {
+      height: 70%;
     }
   }
 }

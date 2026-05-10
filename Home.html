@@ -105,7 +105,7 @@
         <img class="hero__logo" src="Img\logo-1.png" alt="" data-image-width="236" data-image-height="143">
         <div>
           <h5 class="hero__eyebrow">Decoração de festas e eventos · 20 anos de experiência</h5>
-          <h1 class="hero__titulo">Transformamos espaços em memórias que duram para sempre</h1>
+          <h1 class="hero__titulo">Transformando espaços em memórias que duram para sempre</h1>
           <p class="hero__descricao">Decoração de festas e eventos com criatividade e atenção a cada detalhe do balão
             à
             mesa do bolo. Festas infantis, 15 anos, aniversários e formaturas.</p>
@@ -132,9 +132,7 @@
 
                   <strong>
                     anos
-                  </strong>
-                  criando momentos
-                  inesquecíveis
+                  </strong>criando momentos inesquecíveis
                 </h5>
               </div>
             </div>
@@ -455,7 +453,6 @@
 
       // ── Bolas interativas — section-processo ─────────────────
       (function () {
-        // Desativa bolas em dispositivos iOS
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
         if (isIOS) return;
@@ -464,12 +461,12 @@
         const canvas = document.getElementById('processoCanvas');
         const ctx = canvas.getContext('2d');
 
-        const NUM = 28;
+        const NUM = 10; // bolas por zona
+        const ZONE = 0.30; // 30% da largura para cada zona
         const REPEL = 110, FORCE = 5.5, FRICTION = 0.965, SPEED_MAX = 9;
         const palette = ['#f04770', '#3d90aa', '#ffd167'];
         let W, H, mouse = { x: -9999, y: -9999 };
         let balls = [];
-
         var dpr = window.devicePixelRatio || 1;
 
         function resize() {
@@ -483,19 +480,27 @@
           ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         }
 
+        function makeBall(xMin, xMax) {
+          const r = 28 + Math.random() * 36;
+          return {
+            x: xMin + r + Math.random() * (xMax - xMin - r * 2),
+            y: r + Math.random() * (H - r * 2),
+            vx: (Math.random() - 0.5) * 1.2,
+            vy: (Math.random() - 0.5) * 1.2,
+            r,
+            xMin, xMax, // zona de confinamento
+            color: palette[Math.floor(Math.random() * palette.length)],
+            alpha: 0.82 + Math.random() * 0.18,
+          };
+        }
+
         function initBalls() {
-          balls = Array.from({ length: NUM }, () => {
-            const r = 28 + Math.random() * 36;
-            return {
-              x: r + Math.random() * (W - r * 2),
-              y: r + Math.random() * (H - r * 2),
-              vx: (Math.random() - 0.5) * 1.2,
-              vy: (Math.random() - 0.5) * 1.2,
-              r,
-              color: palette[Math.floor(Math.random() * palette.length)],
-              alpha: 0.82 + Math.random() * 0.18,
-            };
-          });
+          const leftMax = W * ZONE;
+          const rightMin = W * (1 - ZONE);
+          balls = [
+            ...Array.from({ length: NUM }, () => makeBall(0, leftMax)),
+            ...Array.from({ length: NUM }, () => makeBall(rightMin, W)),
+          ];
         }
 
         resize();
@@ -514,19 +519,14 @@
           mouse.y = -9999;
         });
 
-        // Giroscópio/acelerômetro no mobile — suavizado
         if (window.DeviceMotionEvent) {
           var smoothX = 0, smoothY = 0;
           window.addEventListener('devicemotion', function (e) {
             const acc = e.accelerationIncludingGravity;
             if (!acc) return;
-            // filtro passa-baixo para suavizar leituras bruscas
             smoothX = smoothX * 0.85 + (acc.x || 0) * 0.15;
             smoothY = smoothY * 0.85 + (acc.y || 0) * 0.15;
-            for (const b of balls) {
-              b.vx += smoothX * 0.08;
-              b.vy -= smoothY * 0.08;
-            }
+            for (const b of balls) { b.vx += smoothX * 0.08; b.vy -= smoothY * 0.08; }
           });
         }
 
@@ -554,8 +554,9 @@
             b.x += b.vx;
             b.y += b.vy;
 
-            if (b.x - b.r < 0) { b.x = b.r; b.vx = Math.abs(b.vx) * 0.7; }
-            if (b.x + b.r > W) { b.x = W - b.r; b.vx = -Math.abs(b.vx) * 0.7; }
+            // Confinamento por zona horizontal
+            if (b.x - b.r < b.xMin) { b.x = b.xMin + b.r; b.vx = Math.abs(b.vx) * 0.7; }
+            if (b.x + b.r > b.xMax) { b.x = b.xMax - b.r; b.vx = -Math.abs(b.vx) * 0.7; }
             if (b.y - b.r < 0) { b.y = b.r; b.vy = Math.abs(b.vy) * 0.7; }
             if (b.y + b.r > H) { b.y = H - b.r; b.vy = -Math.abs(b.vy) * 0.7; }
 
@@ -583,6 +584,83 @@
         loop();
       })();
 
+      // ── Wave sobre__eyebrow ─────────────────────────────────
+      var eyebrowWave = (function () {
+        const eyebrow = document.querySelector('.sobre__eyebrow');
+        if (!eyebrow) return { trigger: function () { } };
+
+        function makeWord(text) {
+          const word = document.createElement('span');
+          word.className = 'word';
+          for (const ch of text) {
+            const s = document.createElement('span');
+            s.className = 'char';
+            s.textContent = ch;
+            word.appendChild(s);
+          }
+          return word;
+        }
+
+        function makeSpace() {
+          const sp = document.createElement('span');
+          sp.className = 'word-space';
+          return sp;
+        }
+
+        const originalNodes = Array.from(eyebrow.childNodes);
+        eyebrow.innerHTML = '';
+        originalNodes.forEach(function (node) {
+          if (node.nodeType === Node.TEXT_NODE) {
+            node.textContent.split(/(\s+)/).forEach(function (part) {
+              if (!part) return;
+              if (/^\s+$/.test(part)) {
+                eyebrow.appendChild(makeSpace());
+              } else {
+                eyebrow.appendChild(makeWord(part));
+              }
+            });
+          } else if (node.nodeType === Node.ELEMENT_NODE) {
+            const wrapper = document.createElement('strong');
+            if (node.className) wrapper.className = node.className;
+            const text = node.textContent.trim();
+            if (text) wrapper.appendChild(makeWord(text));
+            eyebrow.appendChild(wrapper);
+            eyebrow.appendChild(makeSpace());
+          }
+        });
+
+        const chars = Array.from(eyebrow.querySelectorAll('.char'));
+
+        eyebrow.addEventListener('mousemove', function (e) {
+          const rect = eyebrow.getBoundingClientRect();
+          const mx = e.clientX - rect.left;
+          chars.forEach(function (span) {
+            const sr = span.getBoundingClientRect();
+            const cx = sr.left - rect.left + sr.width / 2;
+            const dist = Math.abs(mx - cx);
+            const maxDist = 80;
+            const lift = dist < maxDist ? Math.round((1 - dist / maxDist) * 14) : 0;
+            span.style.transform = lift > 0 ? 'translateY(-' + lift + 'px)' : '';
+          });
+        });
+
+        eyebrow.addEventListener('mouseleave', function () {
+          chars.forEach(function (span) { span.style.transform = ''; });
+        });
+
+        // Dispara uma onda automática passando da esquerda para a direita
+        function trigger() {
+          chars.forEach(function (span, i) {
+            setTimeout(function () {
+              span.style.transform = 'translateY(-12px)';
+              setTimeout(function () { span.style.transform = ''; }, 200);
+            }, i * 30);
+          });
+        }
+
+        return { trigger: trigger };
+      })();
+
       // ── Animação hero__logo ──────────────────────────────────
       var heroLogo = document.querySelector('.hero__logo');
       if (heroLogo) {
@@ -591,18 +669,41 @@
             heroLogo.classList.add('is-visible');
             obs.disconnect();
           }
-        }, { threshold: 1.0 }).observe(heroLogo);
+        }, { threshold: 0.1 }).observe(heroLogo);
       }
 
       // ── Animação sobre__foto ─────────────────────────────────
       var sobreFoto = document.querySelector('.sobre__foto');
       if (sobreFoto) {
+        sobreFoto.addEventListener('transitionend', function handler(e) {
+          if (e.propertyName === 'transform') {
+            sobreFoto.removeEventListener('transitionend', handler);
+            eyebrowWave.trigger();
+          }
+        });
         new IntersectionObserver(function (entries, obs) {
           if (entries[0].isIntersecting) {
             sobreFoto.classList.add('is-visible');
             obs.disconnect();
           }
         }, { threshold: 1.0 }).observe(sobreFoto);
+      }
+
+      // ── Cards centralizados no mobile ───────────────────────
+      if (window.innerWidth <= 767) {
+        const vh = window.innerHeight;
+        const margin = Math.round(vh * 0.35);
+        const centerObserver = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            entry.target.classList.toggle('is-center', entry.isIntersecting);
+          });
+        }, {
+          rootMargin: '-' + margin + 'px 0px -' + margin + 'px 0px',
+          threshold: 0,
+        });
+        document.querySelectorAll('.servico-card, .processo-etapa').forEach(function (el) {
+          centerObserver.observe(el);
+        });
       }
 
       document.addEventListener('click', function (e) {
@@ -632,7 +733,8 @@
               <!-- <img class=""
                 src="https://placehold.co/93x131" alt="" data-image-width="93" data-image-height="131"> -->
               <h3 class="processo-etapa__titulo">01 · Contato &amp; Briefing</h3>
-              <p class="processo-etapa__descricao">Você entra em contato pelo WhatsApp.
+              <p class="processo-etapa__descricao">Você entra em contato pelo <a
+                  href="https://wa.me/555196236804?text=Ol%C3%A1,+Vim+pelo+Site">WhatsApp</a>.
                 Conversamos sobre o evento:
                 tipo, data, local, número de convidados e tema desejado.</p>
             </div>
@@ -655,6 +757,8 @@
               <p class="processo-etapa__descricao">Nossa equipe produz todos os elementos
                 e faz a montagem completa
                 no local. Você chega e encontra tudo pronto o trabalho pesado é todo nosso.</p>
+              <a href="https://wa.me/555196236804?text=Ol%C3%A1,+Vim+pelo+Site" class="processo-etapa__cta">Entra em
+                contato</a>
             </div>
           </div>
         </div>
